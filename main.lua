@@ -1,14 +1,24 @@
-function typeof(self, super)
+function descendent(klass, super)
     local meta repeat
-        meta = getmetatable(meta or self)
+        meta = getmetatable(meta or klass)
         if meta and meta.__index == super then return true end
     until not meta
     return false
 end
 
-function class(base)
-    return setmetatable({is = typeof}, {__index = base, __call = class})
+function replica(klass)
+    if type(klass) ~= "table" then return {} end
+    local copy = replica(getmetatable(klass).__index)
+    for k, v in pairs(klass) do copy[k] = v end
+    return copy
 end
+
+function class(base)
+    return setmetatable({}, {__index = base, __call = replica})
+end
+
+
+
 
 local json = require "json"
 local Scene = class()
@@ -30,9 +40,8 @@ end
 
 function love.load()
     bouncing_ball = Scene():init("demo/bouncing-ball.json")
-    print(bouncing_ball:is(Scene))
 end
 
 function love.draw()
-    --bouncing_ball:draw()
+    bouncing_ball:draw()
 end
