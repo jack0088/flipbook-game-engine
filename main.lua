@@ -8,6 +8,7 @@ end
 
 function replica(klass)
     if type(klass) ~= "table" then return {} end
+    if not getmetatable(klass) then return klass end
     local copy = replica(getmetatable(klass).__index)
     for k, v in pairs(klass) do copy[k] = v end
     return copy
@@ -40,6 +41,9 @@ end
 
 function love.load()
     bouncing_ball = Scene():init("demo/bouncing-ball.json")
+    for k, v in pairs(bouncing_ball) do
+        print(k, v)
+    end
 end
 
 function love.draw()
