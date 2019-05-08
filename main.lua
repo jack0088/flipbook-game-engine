@@ -26,7 +26,7 @@ local Chapter = class()
 
 function Chapter:open(script)
     self.setup = json.decode(love.filesystem.read(script))
-    self:preload(self.setup.setting.frame)
+    self:preload()
     love.window.setTitle(self.setup.camera.title)
     love.window.setMode(self.setup.camera.width, self.setup.camera.height, {
         fullscreen = self.setup.camera.fullscreen,
@@ -42,8 +42,9 @@ function Chapter:close()
 end
 
 function Chapter:preload(frame)
+    if frame then self.setup.setting.frame = frame end
+    
     -- queue up all trigger callbacks
-    self.setup.setting.frame = frame
     self.trigger = {}
     for t, trigger in ipairs(self.setup.scene[self.setup.setting.frame].trigger) do
         if trigger.frame then
@@ -58,7 +59,7 @@ function Chapter:preload(frame)
             if audio then
                 local timeout = love.timer.getTime() + (trigger.delay or 0)
                 table.insert(self.trigger, function()
-                    if love.timer.getTime > timeout and not audio:isPlaying() then
+                    if love.timer.getTime() > timeout and not audio:isPlaying() then
                         audio:play()
                     end
                 end)
@@ -111,6 +112,8 @@ function Chapter:preload(frame)
         love.graphics.draw(love.graphics.newImage(self.setup.setting.folder..layer))
     end
     love.graphics.setCanvas()
+
+    print("ok")
 end
 
 function Chapter:draw()
