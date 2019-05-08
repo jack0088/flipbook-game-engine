@@ -24,20 +24,16 @@ end
 local json = require "json"
 local Chapter = class()
 
-function Chapter:open(script, buffer)
+function Chapter:open(script)
     self.setup = json.decode(love.filesystem.read(script))
-    self.buffer = buffer or 30 -- length in seconds
-    self:preload(self.buffer)
+    self.renderer = {}
+    self.timer = {}
+    self:preload()
     love.window.setTitle(self.setup.camera.title)
     love.window.setMode(self.setup.camera.width, self.setup.camera.height, {
         fullscreen = self.setup.camera.fullscreen,
         resizable = true
     })
-    for _, a in ipairs(self.playlist) do
-        for b, c in pairs(a) do
-            print(_, b, c)
-        end
-    end
     -- TODO play visual transition effect
     return self
 end
@@ -47,68 +43,61 @@ function Chapter:close()
     -- unload/ destroy current chapter if needed
 end
 
-function Chapter:sequence(seconds)
-    -- TODO wrap this into a coroutine?
-    local remainder, index = seconds or self.buffer
-    if self.playlist and self.playhead then index = self.playlist[self.playhead].index
-    else index = self.setup.setting.frame end
-    self.playlist = {}
-    self.playhead = 1
-    repeat
-        self:cache(index)
-        local earliest
-        for k, trigger in ipairs(self.setup.scene[index].trigger) do
-            local delay = (self.playlist[#self.playlist].audio and self.playlist[#self.playlist].audio:getDuration() or trigger.delay) or 0
-            if not earliest or earliest > delay then
-                earliest = delay
-                index = trigger.frame
-            end
-        end
-        remainder = remainder - earliest
-    until remainder <= 0 or not index
-end
-
-function Chapter:cache(frame)
-    if type(frame) == "number" then
-        local context = love.graphics.newCanvas(self.setup.setting.width, self.setup.setting.height)
-        love.graphics.setCanvas(context)
-        for i, layer in ipairs(self.setup.scene[frame].layer) do
-            love.graphics.draw(love.graphics.newImage(self.setup.setting.folder..layer))
-        end
-        love.graphics.setCanvas()
-        table.insert(self.playlist, {render = context:newImageData(), index = frame})
-        for j, trigger in ipairs(self.setup.scene[frame].trigger) do
-            if type(trigger.audio) == "string" then
-                assert(not self.playlist[#self.playlist].audio, "found audio trigger duplicate in scene frame "..frame)
-                self.playlist[#self.playlist].audio = love.audio.newSource(self.setup.setting.folder..trigger.audio, "static")
-            end
-        end
-    end
-end
-
-function Chapter:preload(seconds)
-    local route = {}
-    local index = (self.playlist and self.playhead) and self.playlist[self.playhead].index or self.setup.setting.frame
-    local ramainder = seconds or self.buffer
-    repeat
+function Chapter:preload()
+    local index = self.setup.setting.frame repeat
         for t, trigger in ipairs(self.setup.scene[index].trigger) do
             if trigger.frame then
                 local INSTANT = not trigger.delay and not trigger.audio and not trigger.contact
-                local FORWARD = (trigger.delay or trigger.audio) and not trigger.contact
+                local FORWARD = trigger.delay or trigger.audio
                 local SLEEP = not trigger.delay and not trigger.audio and trigger.contact
-                self:cache(index)
+                
+                
+
+                self:queue(self.timer, nil)
                 index = trigger.frame
                 if SLEEP then break end
                 if FORWARD then remainder = remainder - earliest end
             end
         end
-    until remainder <= 0 or not index
-    return route
+
+        local context = love.graphics.newCanvas(self.setup.setting.width, self.setup.setting.height)
+        love.graphics.setCanvas(context)
+        for l, layer in ipairs(self.setup.scene[index].layer) do
+            love.graphics.draw(love.graphics.newImage(self.setup.setting.folder..layer))
+        end
+        love.graphics.setCanvas()
+        self:queue(self.renderer, love.graphics.drawFrame, self, context:newImageData(), duration)
+    until not index
+
+    for _, a in ipairs(self.playlist) do
+        for b, c in pairs(a) do
+            print(_, b, c)
+        end
+    end
+end
+
+function Chapter:queue(thread, action, ...)
+    local arguments = {...}
+    local process = function(reference) action(reference, unpack(arguments)) end
+    table.insert(thread, coroutine.create(process))
+end
+
+function Chapter:drawFrame(image, duration)
+    while love.timer.getTime() <= love.timer.getTime() + duration do
+        love.graphics.draw(image)
+        if type(self) == "thread" then coroutine.yield() end
+    end
 end
 
 function Chapter:draw()
+    --[[
     --self:preload(self.buffer) -- TODO dynamically
     love.graphics.setBackgroundColor(self.setup.camera.chroma)
+    if #self.pipeline > 0 then
+        if coroutine.status(self.pipeline[1]) == "dead" then table.remove(self.pipeline, 1)
+        else coroutine.resume(self.pipeline[1], self.pipeline[1]) end
+    end
+    --]]
 end
 
 
@@ -116,8 +105,6 @@ end
 
 function love.load()
     bouncing_ball = Chapter():open("demo/bouncing-ball.json")
-    --for k, v in pairs(bouncing_ball) do print(k, v) end
-    print(math.min(nil, 3, 1))
 end
 
 function love.draw()
