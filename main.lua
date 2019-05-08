@@ -22,25 +22,24 @@ end
 
 
 local json = require "json"
-local Scene = class()
+local Chapter = class()
 
-function Scene:init(descriptor)
-    local scn = json.decode(love.filesystem.read(descriptor))
-    love.window.setTitle(scn.window.title)
-    love.window.setMode(scn.window.width, scn.window.height)
-    self.background = scn.scene.background
+function Chapter:open(script)
+    self.setup = json.decode(love.filesystem.read(script))
+    love.window.setTitle(self.setup.camera.title)
+    love.window.setMode(self.setup.camera.width, self.setup.camera.height)
     return self
 end
 
-function Scene:draw()
-    love.graphics.setBackgroundColor(self.background)
+function Chapter:draw()
+    love.graphics.setBackgroundColor(self.setup.camera.chroma)
 end
 
 
 
 
 function love.load()
-    bouncing_ball = Scene():init("demo/bouncing-ball.json")
+    bouncing_ball = Chapter():open("demo/bouncing-ball.json")
     for k, v in pairs(bouncing_ball) do
         print(k, v)
     end

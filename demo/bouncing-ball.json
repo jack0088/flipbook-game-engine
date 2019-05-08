@@ -1,42 +1,32 @@
 {
-    "window": {
+    "camera": {
         "title": "Bouncing Ball Example",
         "width": 256,
         "height": 256,
-        "fullscreen": false
+        "fullscreen": false,
+        "chroma": [1, 0, 0, 1]
     },
-    "scene": {
+    "setting": {
         "width": 64,
         "height": 64,
-        "background": [1, 0, 0, 1],
-        "frame": 1
+        "scene": 1
     },
-    "frame": [
+    "scene": [
         {
-            "name": "first-frame-in-game",
-            "visual": "ball1.png",
-            "trigger": [
-                {"frame": 2, "delay": 3}
-            ]
+            "layer": ["ball1.png"],
+            "trigger": [{"frame": 2, "delay": 3}]
         },
         {
-            "visual": "ball2.png",
-            "trigger": [
-                {"frame": 3, "audio": "klam4ki.wav"}
-            ]
+            "layer": ["ball2.png"],
+            "trigger": [{"frame": 3, "audio": "klam4ki.wav"}]
         },
         {
-            "visual": "ball3.png",
-            "trigger": [
-                {"frame": 4, "contact": [0, 0, 64, 64]}
-            ]
+            "layer": ["ball3.png"],
+            "trigger": [{"frame": 4, "contact": [0, 0, 64, 64]}]
         },
         {
-            "name": "last-frame",
-            "visual": "ball3",
-            "trigger": [
-                {"frame": "first-frame-in-game"}
-            ]
+            "layer": ["ball3.png"],
+            "trigger": [{"frame": 1}]
         }
     ]
 }
