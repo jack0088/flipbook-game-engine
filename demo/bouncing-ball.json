@@ -33,7 +33,9 @@
                 {"frame": 1, "audio": "klam4ki.wav"},
                 {"frame": 1, "audio": "klam4ki.wav", "delay": 3},
                 {"frame": 1, "contact": [0, 0, 5, 5]},
-                {"frame": 1, "contact": [5, 5, 64, 64]}
+                {"frame": 1, "contact": [0, 0, 5, 5], "delay": 3},
+                {"frame": 1, "contact": [0, 0, 5, 5], "audio": "klam4ki.wav"},
+                {"frame": 1, "contact": [0, 0, 5, 5], "audio": "klam4ki.wav", "delay": 3}
             ]
         }
     ]
