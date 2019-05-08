@@ -27,6 +27,7 @@ local Chapter = class()
 function Chapter:open(script, buffer)
     self.setup = json.decode(love.filesystem.read(script))
     self.buffer = buffer or 30 -- length in seconds
+    self:preload(self.buffer)
     love.window.setTitle(self.setup.camera.title)
     love.window.setMode(self.setup.camera.width, self.setup.camera.height, {
         fullscreen = self.setup.camera.fullscreen,
@@ -46,8 +47,9 @@ function Chapter:close()
     -- unload/ destroy current chapter if needed
 end
 
-function Chapter:preload(seconds)
-    local remainder, index = seconds
+function Chapter:sequence(seconds)
+    -- TODO wrap this into a coroutine?
+    local remainder, index = seconds or self.buffer
     if self.playlist and self.playhead then index = self.playlist[self.playhead].index
     else index = self.setup.setting.frame end
     self.playlist = {}
@@ -84,8 +86,28 @@ function Chapter:cache(frame)
     end
 end
 
+function Chapter:preload(seconds)
+    local route = {}
+    local index = (self.playlist and self.playhead) and self.playlist[self.playhead].index or self.setup.setting.frame
+    local ramainder = seconds or self.buffer
+    repeat
+        for t, trigger in ipairs(self.setup.scene[index].trigger) do
+            if trigger.frame then
+                local INSTANT = not trigger.delay and not trigger.audio and not trigger.contact
+                local FORWARD = (trigger.delay or trigger.audio) and not trigger.contact
+                local SLEEP = not trigger.delay and not trigger.audio and trigger.contact
+                self:cache(index)
+                index = trigger.frame
+                if SLEEP then break end
+                if FORWARD then remainder = remainder - earliest end
+            end
+        end
+    until remainder <= 0 or not index
+    return route
+end
+
 function Chapter:draw()
-    self:preload(self.buffer) -- TODO dynamically
+    --self:preload(self.buffer) -- TODO dynamically
     love.graphics.setBackgroundColor(self.setup.camera.chroma)
 end
 
@@ -95,6 +117,7 @@ end
 function love.load()
     bouncing_ball = Chapter():open("demo/bouncing-ball.json")
     --for k, v in pairs(bouncing_ball) do print(k, v) end
+    print(math.min(nil, 3, 1))
 end
 
 function love.draw()
