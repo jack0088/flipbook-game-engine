@@ -28,7 +28,7 @@ function Chapter:open(script)
     self.script = script
     self.setup = json.decode(love.filesystem.read(self.script))
     love.window.setTitle(self.setup.camera.title or self.setup.setting.title)
-    love.window.setIcon(love.image.newImageData(self.setup.setting.folder..self.setup.setting.icon))
+    love.window.setIcon(love.image.newImageData(self.setup.setting.asset..self.setup.setting.icon))
     love.window.setMode(self.setup.camera.width, self.setup.camera.height, {
         minwidth = self.setup.setting.width,
         minheight = self.setup.setting.height,
@@ -51,7 +51,7 @@ function Chapter:preload(frame)
             local DELAY = trigger.delay and trigger.audio
             local SLEEP = not trigger.delay and not trigger.audio and trigger.contact
             local SAVE = trigger.save
-            local audio = trigger.audio and love.audio.newSource(self.setup.setting.folder..trigger.audio, "static") or nil
+            local audio = trigger.audio and love.audio.newSource(self.setup.setting.asset..trigger.audio, "static") or nil
 
             -- play audio after delay or immediately
             if audio then
@@ -68,6 +68,7 @@ function Chapter:preload(frame)
             -- forward immediately
             if SKIP then
                 table.insert(self.trigger, function()
+                    if audio then audio:release() end
                     self:preload(trigger.frame)
                 end)
             end
@@ -80,6 +81,7 @@ function Chapter:preload(frame)
                 else timeout = timeout + trigger.delay end
                 table.insert(self.trigger, function()
                     if love.timer.getTime() > timeout then
+                        if audio then audio:release() end
                         self:preload(trigger.frame)
                     end
                 end)
@@ -88,9 +90,18 @@ function Chapter:preload(frame)
             -- forward after click or touch
             if SLEEP then
                 table.insert(self.trigger, function()
+                    local w = love.graphics.getWidth()
+                    local h = love.graphics.getHeight()
+                    local s = math.min(w / self.setup.setting.width, h / self.setup.setting.height)
+                    local x = w/2 - self.setup.setting.width * s / 2
+                    local y = h/2 - self.setup.setting.height * s / 2
+                    local x1 = x + trigger.contact[1] * s
+                    local y1 = y + trigger.contact[2] * s
+                    local x2 = x1 + trigger.contact[3] * s
+                    local y2 = y1 + trigger.contact[4] * s
                     if love.mouse.isDown(1)
-                    and love.mouse.getX() > trigger.contact[1] and love.mouse.getX() < trigger.contact[3]
-                    and love.mouse.getY() > trigger.contact[2] and love.mouse.getY() < trigger.contact[4]
+                    and love.mouse.getX() > x1 and love.mouse.getX() < x2
+                    and love.mouse.getY() > y1 and love.mouse.getY() < y2
                     then
                         self:preload(trigger.frame)
                     end
@@ -109,8 +120,9 @@ function Chapter:preload(frame)
     self.render = love.graphics.newCanvas(self.setup.setting.width, self.setup.setting.height)
     self.render:setFilter("nearest", "nearest")
     self.render:renderTo(function()
+        love.graphics.clear(self.setup.setting.chroma)
         for l, layer in ipairs(self.setup.scene[self.frame].layer) do
-            local image = love.graphics.newImage(self.setup.setting.folder..layer)
+            local image = love.graphics.newImage(self.setup.setting.asset..layer)
             image:setFilter("nearest", "nearest")
             love.graphics.draw(image)
         end
@@ -118,9 +130,12 @@ function Chapter:preload(frame)
 end
 
 function Chapter:draw()
+    local w = love.graphics.getWidth()
+    local h = love.graphics.getHeight()
+    local s = math.min(w / self.setup.setting.width, h / self.setup.setting.height)
     love.graphics.setBackgroundColor(self.setup.camera.chroma)
     love.graphics.setBlendMode("alpha", "premultiplied")
-    love.graphics.draw(self.render)
+    love.graphics.draw(self.render, w/2, h/2, 0, s, s, self.setup.setting.width/2, self.setup.setting.height/2)
     for t, trigger in ipairs(self.trigger) do trigger() end
 end
 
@@ -128,9 +143,9 @@ end
 
 
 function love.load()
-    bouncing_ball = Chapter():open("demo/bouncing-ball.json")
+    game = Chapter():open("demo/bouncing-ball.json")
 end
 
 function love.draw()
-    bouncing_ball:draw()
+    game:draw()
 end

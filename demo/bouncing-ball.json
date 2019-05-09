@@ -3,20 +3,21 @@
         "width": 256,
         "height": 256,
         "fullscreen": false,
-        "chroma": [0.8, 0.8, 0.82, 1]
+        "chroma": [0.1, 0.1, 0.12, 1]
     },
     "setting": {
-        "title": "Bouncing Ball Example",
+        "frame": 1,
         "width": 64,
         "height": 64,
-        "folder": "demo/",
-        "icon": "bouncing-logo.png",
-        "frame": 1
+        "chroma": [0.8, 0.8, 0.82, 1],
+        "asset": "demo/",
+        "title": "Bouncing Ball Example",
+        "icon": "bouncing-logo.png"
     },
     "scene": [
         {
             "layer": ["ball1.png", "ball2.png", "ball3.png", "ball4.png", "ball5.png", "ball6.png", "ball7.png"],
-            "trigger": [{"frame": 2, "delay": 5}]
+            "trigger": [{"frame": 2, "delay": 1}]
         },
         {
             "layer": ["ball2.png"],
@@ -27,8 +28,8 @@
             "trigger": [{"frame": 4, "contact": [0, 0, 64, 64]}]
         },
         {
-            "layer": ["ball3.png"],
-            "trigger": [{"frame": 1, "contact": [0, 0, 5, 5], "audio": "klam4ki.wav", "delay": 3}]
+            "layer": ["ball4.png"],
+            "trigger": [{"frame": 1, "contact": [0, 0, 5, 5], "audio": "klam4ki-short.wav", "delay": 4}]
         }
     ]
 }
