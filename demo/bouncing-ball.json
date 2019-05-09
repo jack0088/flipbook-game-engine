@@ -3,6 +3,7 @@
         "width": 256,
         "height": 256,
         "fullscreen": false,
+        "pixelated": true,
         "chroma": [0.1, 0.1, 0.12, 1]
     },
     "setting": {
@@ -16,20 +17,36 @@
     },
     "scene": [
         {
-            "layer": ["ball1.png", "ball2.png", "ball3.png", "ball4.png", "ball5.png", "ball6.png", "ball7.png"],
+            "layer": ["ball1.png"],
             "trigger": [{"frame": 2, "delay": 1}]
         },
         {
             "layer": ["ball2.png"],
-            "trigger": [{"frame": 3, "audio": "klam4ki.wav"}]
+            "trigger": [{"audio": "klam4ki.wav", "frame": 3}]
         },
         {
             "layer": ["ball3.png"],
-            "trigger": [{"frame": 4, "contact": [0, 0, 64, 64]}]
+            "trigger": [{"contact": [0, 0, 64, 64], "frame": 4}]
         },
         {
             "layer": ["ball4.png"],
-            "trigger": [{"frame": 1, "contact": [0, 0, 5, 5], "audio": "klam4ki-short.wav", "delay": 4}]
+            "trigger": [{"delay": 3, "audio": "klam4ki-short.wav", "frame": 5}]
+        },
+        {
+            "layer": ["ball5.png"],
+            "trigger": [{"frame": 6, "delay": 0.25}]
+        },
+        {
+            "layer": ["ball6.png"],
+            "trigger": [{"audio": "klam4ki-short.wav", "contact": [0, 0, 64, 64], "frame": 7}]
+        },
+        {
+            "layer": ["ball7.png"],
+            "trigger": [{"contact": [0, 0, 64, 64], "frame": 8}]
+        },
+        {
+            "layer": ["ball1.png", "ball2.png", "ball3.png", "ball4.png", "ball5.png", "ball6.png", "ball7.png"],
+            "trigger": []
         }
     ]
 }

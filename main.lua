@@ -25,8 +25,8 @@ local json = require "json"
 local Chapter = class()
 
 function Chapter:open(script, frame)
-    self.script = script
-    self.setup = json.decode(love.filesystem.read(self.script))
+    self.url = script
+    self.setup = json.decode(love.filesystem.read(self.url))
     love.window.setTitle(self.setup.camera.title or self.setup.setting.title)
     love.window.setIcon(love.image.newImageData(self.setup.setting.asset..self.setup.setting.icon))
     love.window.setMode(self.setup.camera.width, self.setup.camera.height, {
@@ -116,12 +116,14 @@ function Chapter:preload(frame)
 
         -- bake all layer images into a single texture
         self.render = love.graphics.newCanvas(self.setup.setting.width, self.setup.setting.height)
-        self.render:setFilter("nearest", "nearest")
+        self.render:setFilter("linear", "linear")
+        if self.setup.camera.pixelated then self.render:setFilter("nearest", "nearest") end
         self.render:renderTo(function()
             love.graphics.clear(self.setup.setting.chroma)
             for l, layer in ipairs(self.setup.scene[self.frame].layer) do
                 local image = love.graphics.newImage(self.setup.setting.asset..layer)
-                image:setFilter("nearest", "nearest")
+                image:setFilter("linear", "linear")
+                if self.setup.camera.pixelated then image:setFilter("nearest", "nearest") end
                 love.graphics.draw(image)
             end
         end)
