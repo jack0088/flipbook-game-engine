@@ -25,28 +25,32 @@ local json = require "json"
 local Chapter = class()
 
 function Chapter:open(script)
-    self.setup = json.decode(love.filesystem.read(script))
-    love.window.setTitle(self.setup.camera.title)
+    self.script = script
+    self.setup = json.decode(love.filesystem.read(self.script))
+    love.window.setTitle(self.setup.camera.title or self.setup.setting.title)
+    love.window.setIcon(love.image.newImageData(self.setup.setting.folder..self.setup.setting.icon))
     love.window.setMode(self.setup.camera.width, self.setup.camera.height, {
+        minwidth = self.setup.setting.width,
+        minheight = self.setup.setting.height,
         fullscreen = self.setup.camera.fullscreen,
         resizable = true
     })
-    self:preload()
+    love.filesystem.setIdentity(love.window.getTitle():lower():gsub("[%s_]", "%-"))
+    self:preload(self.setup.setting.frame)
     return self
 end
 
 function Chapter:preload(frame)
-    if frame then self.setup.setting.frame = frame end
-
-    -- queue up all trigger callbacks
+    -- queue up all trigger handler
+    self.frame = frame
     self.trigger = {}
-    for t, trigger in ipairs(self.setup.scene[self.setup.setting.frame].trigger) do
+    for t, trigger in ipairs(self.setup.scene[self.frame].trigger) do
         if trigger.frame then
             local SKIP = not trigger.delay and not trigger.audio and not trigger.contact
             local FORWARD = trigger.delay or trigger.audio
             local DELAY = trigger.delay and trigger.audio
             local SLEEP = not trigger.delay and not trigger.audio and trigger.contact
-            local SAVE = trigger.autosave
+            local SAVE = trigger.save
             local audio = trigger.audio and love.audio.newSource(self.setup.setting.folder..trigger.audio, "static") or nil
 
             -- play audio after delay or immediately
@@ -95,7 +99,8 @@ function Chapter:preload(frame)
 
             -- store game progress
             if SAVE then
-                -- TODO
+                self.setup.setting.frame = self.frame
+                -- TODO re-save self.script file or use löve's savefiles?
             end
         end
     end
@@ -104,7 +109,7 @@ function Chapter:preload(frame)
     self.render = love.graphics.newCanvas(self.setup.setting.width, self.setup.setting.height)
     self.render:setFilter("nearest", "nearest")
     self.render:renderTo(function()
-        for l, layer in ipairs(self.setup.scene[self.setup.setting.frame].layer) do
+        for l, layer in ipairs(self.setup.scene[self.frame].layer) do
             local image = love.graphics.newImage(self.setup.setting.folder..layer)
             image:setFilter("nearest", "nearest")
             love.graphics.draw(image)

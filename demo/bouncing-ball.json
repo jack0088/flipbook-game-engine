@@ -1,15 +1,16 @@
 {
     "camera": {
-        "title": "Bouncing Ball Example",
         "width": 256,
         "height": 256,
         "fullscreen": false,
         "chroma": [0.8, 0.8, 0.82, 1]
     },
     "setting": {
+        "title": "Bouncing Ball Example",
         "width": 64,
         "height": 64,
         "folder": "demo/",
+        "icon": "bouncing-logo.png",
         "frame": 1
     },
     "scene": [
