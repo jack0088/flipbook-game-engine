@@ -36,6 +36,7 @@ function Chapter:open(script)
         resizable = true
     })
     love.filesystem.setIdentity(love.window.getTitle():lower():gsub("[%s_]", "%-"))
+    -- TODO restore progressed savegame
     self:preload(self.setup.setting.frame)
     return self
 end
@@ -87,7 +88,7 @@ function Chapter:preload(frame)
                 end)
             end
 
-            -- forward after click or touch
+            -- forward after user input
             if SLEEP then
                 table.insert(self.trigger, function()
                     local w = love.graphics.getWidth()
@@ -108,10 +109,9 @@ function Chapter:preload(frame)
                 end)
             end
 
-            -- store game progress
+            -- capture game progress
             if SAVE then
-                self.setup.setting.frame = self.frame
-                -- TODO re-save self.script file or use löve's savefiles?
+                -- TODO capture chapter and frame for savegame
             end
         end
     end
