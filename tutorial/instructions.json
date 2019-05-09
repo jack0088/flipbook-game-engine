@@ -1,0 +1,19 @@
+{
+    "camera": {
+        "width": 512,
+        "height": 512,
+        "fullscreen": false,
+        "chroma": [0.1, 0.1, 0.12, 1]
+    },
+    "setting": {
+        "frame": 1,
+        "width": 64,
+        "height": 64,
+        "chroma": [0.8, 0.8, 0.82, 1],
+        "asset": "tutorial/",
+        "title": "Introduction to the Flipbook Game Engine",
+        "icon": "flipbook-logo.png"
+    },
+    "scene": [
+    ]
+}
