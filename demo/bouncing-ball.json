@@ -4,7 +4,7 @@
         "width": 256,
         "height": 256,
         "fullscreen": false,
-        "chroma": [1, 0, 0, 1]
+        "chroma": [0.8, 0.8, 0.82, 1]
     },
     "setting": {
         "width": 64,

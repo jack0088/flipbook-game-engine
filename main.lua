@@ -26,24 +26,18 @@ local Chapter = class()
 
 function Chapter:open(script)
     self.setup = json.decode(love.filesystem.read(script))
-    self:preload()
     love.window.setTitle(self.setup.camera.title)
     love.window.setMode(self.setup.camera.width, self.setup.camera.height, {
         fullscreen = self.setup.camera.fullscreen,
         resizable = true
     })
-    -- TODO play visual transition effect
+    self:preload()
     return self
-end
-
-function Chapter:close()
-    -- TODO play visual transition effect
-    -- unload/ destroy current chapter if needed
 end
 
 function Chapter:preload(frame)
     if frame then self.setup.setting.frame = frame end
-    
+
     -- queue up all trigger callbacks
     self.trigger = {}
     for t, trigger in ipairs(self.setup.scene[self.setup.setting.frame].trigger) do
@@ -58,9 +52,11 @@ function Chapter:preload(frame)
             -- play audio after delay or immediately
             if audio then
                 local timeout = love.timer.getTime() + (trigger.delay or 0)
+                local reference = #self.trigger + 1
                 table.insert(self.trigger, function()
                     if love.timer.getTime() > timeout and not audio:isPlaying() then
                         audio:play()
+                        table.remove(self.trigger, reference)
                     end
                 end)
             end
@@ -87,11 +83,10 @@ function Chapter:preload(frame)
 
             -- forward after click or touch
             if SLEEP then
-                local aabb = trigger.contact
                 table.insert(self.trigger, function()
                     if love.mouse.isDown(1)
-                    and love.mouse.getX() > aabb[1] and love.mouse.getX() < aabb[3]
-                    and love.mouse.getY() > aabb[2] and love.mouse.getY() < aabb[4]
+                    and love.mouse.getX() > trigger.contact[1] and love.mouse.getX() < trigger.contact[3]
+                    and love.mouse.getY() > trigger.contact[2] and love.mouse.getY() < trigger.contact[4]
                     then
                         self:preload(trigger.frame)
                     end
@@ -107,17 +102,19 @@ function Chapter:preload(frame)
 
     -- bake all layer images into a single texture
     self.render = love.graphics.newCanvas(self.setup.setting.width, self.setup.setting.height)
-    love.graphics.setCanvas(self.render)
-    for l, layer in ipairs(self.setup.scene[self.setup.setting.frame].layer) do
-        love.graphics.draw(love.graphics.newImage(self.setup.setting.folder..layer))
-    end
-    love.graphics.setCanvas()
-
-    print("ok")
+    self.render:setFilter("nearest", "nearest")
+    self.render:renderTo(function()
+        for l, layer in ipairs(self.setup.scene[self.setup.setting.frame].layer) do
+            local image = love.graphics.newImage(self.setup.setting.folder..layer)
+            image:setFilter("nearest", "nearest")
+            love.graphics.draw(image)
+        end
+    end)
 end
 
 function Chapter:draw()
     love.graphics.setBackgroundColor(self.setup.camera.chroma)
+    love.graphics.setBlendMode("alpha", "premultiplied")
     love.graphics.draw(self.render)
     for t, trigger in ipairs(self.trigger) do trigger() end
 end
